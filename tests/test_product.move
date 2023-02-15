@@ -1,5 +1,5 @@
 #[test_only]
-module satay_product::test_product {
+module simple_tortuga_strategy::test_product {
 
     use std::signer;
 
@@ -11,9 +11,9 @@ module satay_product::test_product {
     use satay::satay_account;
     use satay::satay;
 
-    use satay_product::strategy;
+    use simple_tortuga_strategy::simple_tortuga_strategy;
     use satay::strategy_config;
-    use satay_product::strategy::MockStrategy;
+    use simple_tortuga_strategy::simple_tortuga_strategy::SimpleTortugaStrategy;
     use satay_coins::strategy_coin::StrategyCoin;
 
     // constants
@@ -41,7 +41,7 @@ module satay_product::test_product {
             ],
         );
         satay::initialize(satay);
-        strategy::initialize<AptosCoin>(satay);
+        simple_tortuga_strategy::initialize(satay);
 
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);
@@ -64,8 +64,8 @@ module satay_product::test_product {
         user: &signer,
     ) {
         setup_tests(aptos_framework, satay, user);
-        let strategy_address = strategy::get_strategy_account_address<AptosCoin>();
-        let strategy_manager = strategy_config::get_strategy_manager_address<AptosCoin, MockStrategy>(strategy_address);
+        let strategy_address = simple_tortuga_strategy::get_strategy_account_address();
+        let strategy_manager = strategy_config::get_strategy_manager_address<AptosCoin, SimpleTortugaStrategy>(strategy_address);
         assert!(strategy_manager == @satay, ERR_INITIALIZE);
     }
 
@@ -80,12 +80,13 @@ module satay_product::test_product {
         user: &signer
     ) {
         setup_tests(aptos_framework, satay, user);
-        strategy::deposit<AptosCoin>(user, DEPOSIT_AMOUNT);
+        simple_tortuga_strategy::deposit(user, DEPOSIT_AMOUNT);
 
-        assert!(coin::balance<StrategyCoin<AptosCoin, MockStrategy>>(signer::address_of(user)) == DEPOSIT_AMOUNT, ERR_DEPOSIT);
+        assert!(coin::balance<StrategyCoin<AptosCoin, SimpleTortugaStrategy>>(signer::address_of(user)) == DEPOSIT_AMOUNT, ERR_DEPOSIT);
 
         let next_deposit_amount = 1000;
-        assert!(strategy::calc_product_coin_amount<AptosCoin>(next_deposit_amount) == next_deposit_amount, ERR_DEPOSIT);
+        assert!(
+            simple_tortuga_strategy::calc_product_coin_amount(next_deposit_amount) == next_deposit_amount, ERR_DEPOSIT);
     }
 
     #[test(
@@ -99,8 +100,8 @@ module satay_product::test_product {
         user: &signer
     ) {
         setup_tests(aptos_framework, satay, user);
-        strategy::deposit<AptosCoin>(user, DEPOSIT_AMOUNT);
-        strategy::withdraw<AptosCoin>(user, DEPOSIT_AMOUNT);
+        simple_tortuga_strategy::deposit(user, DEPOSIT_AMOUNT);
+        simple_tortuga_strategy::withdraw(user, DEPOSIT_AMOUNT);
     }
 
     #[test(
@@ -114,7 +115,7 @@ module satay_product::test_product {
         user: &signer
     ) {
         setup_tests(aptos_framework, satay, user);
-        strategy::deposit<AptosCoin>(user, DEPOSIT_AMOUNT);
-        strategy::tend<AptosCoin>(satay);
+        simple_tortuga_strategy::deposit(user, DEPOSIT_AMOUNT);
+        simple_tortuga_strategy::tend(satay);
     }
 }
